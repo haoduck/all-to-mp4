@@ -17,7 +17,7 @@ def get_files(path='E:\\xx', rules=['.wmv','.asf','.asx','.rm','. rmvb','.mpg','
 def ff(source_name):
     # source_name=r'E:test.mp4'
     bit_rate_best=3670016 #目标码率,源文件大于预设码率就转码
-    vcodec='h264' #可以指定硬件编码,通用的是h264(跑CPU),N卡是h264_nvenc,A卡是h264_amf,I卡是h264_qsv,装好驱动才能用
+    vcodec='h264' #可以指定硬件编码,通用的是h264(跑CPU),N卡是h264_nvenc,A卡是h264_amf,I卡是h264_qsv,装好驱动才能用.当然,你也可以选择其他如h265等
     try:
         info = ffmpeg.probe(source_name)
         try:
@@ -34,14 +34,16 @@ def ff(source_name):
                 .input(source_name) #ffmpeg -i source_name
                 .output(to_name,**{'c:a':'copy','c:v':vcodec,'b:v': str(bit_rate_best)}) #相当于-c:a copy -c:v h264_nvenc -b:v 3670016
                 .global_args("-y") #这里的-y就是ffmpeg -y,覆盖已经存在的文件,改为-n则为跳过
-                .run(capture_stdout=True)
+                .run(capture_stdout=False)
             )
             os.rename(source_name,source_name+'.ffbak') #源文件添加后缀.ffbak,确认无误后可删除
             os.rename(to_name,to_name.replace('_lite','')) #去掉临时添加的_lite
         else:
-            print('文件:',source_name,'自身码率:',bit_rate,'比目标码率:',bit_rate_best,'低。跳过')
+            print('文件:',source_name,'自身码率:',bit_rate,'比目标码率:',bit_rate_best,'低(或接近).跳过')
     except:
         print(source_name,'执行失败')
+        if os.path.exists(to_name):
+            os.remove(to_name)
 
 def main():
     # path=r'E:\xx'
