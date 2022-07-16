@@ -2,7 +2,7 @@ import ffmpeg #pip3 install ffmpeg-python
 import os
 import sys
 
-def get_files(path='E:\\xx', rules=['.mp4','.mov','.avi','.flv','rmvb']):
+def get_files(path='E:\\xx', rules=['.wmv','.asf','.asx','.rm','. rmvb','.mpg','.mpeg','.mpe','.3gp','.mov','.mp4','.m4v','.avi','.dat','.mkv','.flv','.vob']):
     all = []
     # os.walk是获取所有的目录
     for fpath, dirs, fs in os.walk(path):
@@ -15,9 +15,9 @@ def get_files(path='E:\\xx', rules=['.mp4','.mov','.avi','.flv','rmvb']):
     return all
 
 def ff(source_name):
-    # source_name=r'E:test.mp4'
+    # source_name=r'E:\test\test.mp4'
     bit_rate_best=3584 #目标码率,设置3584表示3584k,源文件大于预设码率就转码
-    vcodec='h264_nvenc' #可以指定硬件编码,通用的是h264(跑CPU),N卡是h264_nvenc,A卡是h264_amf,I卡是h264_qsv,装好驱动才能用
+    vcodec='h264' #可以指定硬件编码,通用的是h264(跑CPU),N卡是h264_nvenc,A卡是h264_amf,I卡是h264_qsv,装好驱动才能用
     try:
         info = ffmpeg.probe(source_name)
         bit_rate=info['streams'][0]['bit_rate']
