@@ -17,7 +17,7 @@ def get_files(path='E:\\xx', rules=['.wmv','.asf','.asx','.rm','. rmvb','.mpg','
 def ff(source_name):
     # source_name=r'E:test.mp4'
     bit_rate_best=3670016 #目标码率,源文件大于预设码率就转码
-    vcodec='h264_nvenc' #可以指定硬件编码,通用的是h264(跑CPU),N卡是h264_nvenc,A卡是h264_amf,I卡是h264_qsv,装好驱动才能用
+    vcodec='h264' #可以指定硬件编码,通用的是h264(跑CPU),N卡是h264_nvenc,A卡是h264_amf,I卡是h264_qsv,装好驱动才能用
     try:
         info = ffmpeg.probe(source_name)
         try:
@@ -36,7 +36,7 @@ def ff(source_name):
                 .global_args("-y") #这里的-y就是ffmpeg -y,覆盖已经存在的文件,改为-n则为跳过
                 .run(capture_stdout=True)
             )
-            os.rename(source_name,source_name+'.bak') #源文件添加后缀.bak,确认无误后可删除
+            os.rename(source_name,source_name+'.ffbak') #源文件添加后缀.ffbak,确认无误后可删除
             os.rename(to_name,to_name.replace('_lite','')) #去掉临时添加的_lite
         else:
             print('文件:',source_name,'自身码率:',bit_rate,'比目标码率:',bit_rate_best,'低。跳过')
@@ -46,13 +46,29 @@ def ff(source_name):
 def main():
     # path=r'E:\xx'
     path=sys.argv[1]
-    files=get_files(path)
-    if files:
-        for file in files:
-            print('执行此文件:',file)
-            ff(file)
+    try:
+        if sys.argv[2] == 'delbak':
+            delbak=True
+    except:
+        delbak=False
+    if delbak:
+        files=get_files(path,['.ffbak'])
+        if files:
+            for file in files:
+                print('删除此文件:',file)
+                os.remove(file)
+        else:
+            print(path,'未获取到.ffbak文件')
     else:
-        print(path,'未获取到指定的媒体文件')
+        files=get_files(path)
+        if files:
+            for file in files:
+                print('执行此文件:',file)
+                ff(file)
+        else:
+            print(path,'未获取到指定的媒体文件')
 
 if __name__ == '__main__':
+    # python3 main.py 'E:\xx'
+    # python3 main.py 'E:\xx' 'delbak' #删除.ffbak文件
     main()
