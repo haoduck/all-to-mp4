@@ -15,21 +15,24 @@ def get_files(path='E:\\xx', rules=['.wmv','.asf','.asx','.rm','. rmvb','.mpg','
     return all
 
 def ff(source_name):
-    # source_name=r'E:\test\test.mp4'
-    bit_rate_best=3584 #目标码率,设置3584表示3584k,源文件大于预设码率就转码
-    vcodec='h264' #可以指定硬件编码,通用的是h264(跑CPU),N卡是h264_nvenc,A卡是h264_amf,I卡是h264_qsv,装好驱动才能用
+    # source_name=r'E:test.mp4'
+    bit_rate_best=3670016 #目标码率,源文件大于预设码率就转码
+    vcodec='h264_nvenc' #可以指定硬件编码,通用的是h264(跑CPU),N卡是h264_nvenc,A卡是h264_amf,I卡是h264_qsv,装好驱动才能用
     try:
         info = ffmpeg.probe(source_name)
-        bit_rate=info['streams'][0]['bit_rate']
+        try:
+            bit_rate=info['streams'][0]['bit_rate']
+        except: #视频流不能获取到码率的情况下则从总码率预估
+            bit_rate=info['format']['bit_rate']-327680 #总码率-327680(320k)
         print(bit_rate)
-        if int(bit_rate) > bit_rate_best:
+        if int(bit_rate) > bit_rate_best+1024: #加1024，减少一些收益低的转码
             to_name=os.path.splitext(source_name)[0]+'_lite.mp4'
             while os.path.exists(to_name):
-                to_name=os.path.splitext(to_name)[0]+'_1.mp4'
+                to_name=os.path.splitext(to_name)[0]+'_1.mp4' #有时有同名不同格式的情况下,在后面加_1,有3个同名文件则会变成_1_1,以此类推
             (
                 ffmpeg
                 .input(source_name) #ffmpeg -i source_name
-                .output(to_name,**{'c:a':'copy','c:v':vcodec,'b:v': str(bit_rate_best)+'k'}) #相当于-c:a copy -c:v h264_nvenc -b:v 3584k
+                .output(to_name,**{'c:a':'copy','c:v':vcodec,'b:v': str(bit_rate_best)}) #相当于-c:a copy -c:v h264_nvenc -b:v 3670016
                 .global_args("-y") #这里的-y就是ffmpeg -y,覆盖已经存在的文件,改为-n则为跳过
                 .run(capture_stdout=True)
             )
