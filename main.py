@@ -23,9 +23,9 @@ def ff(source_name):
         try:
             bit_rate=info['streams'][0]['bit_rate']
         except: #视频流不能获取到码率的情况下则从总码率预估
-            bit_rate=str(int(info['format']['bit_rate'])-327680) #总码率-327680(320k)
+            bit_rate=str(int(info['format']['bit_rate'])-131072) #总码率-131072(128k)
         print(bit_rate)
-        if int(bit_rate) > bit_rate_best+1024: #加1024，减少一些收益低的转码
+        if int(bit_rate) > bit_rate_best+131072: #加131072，减少一些收益低的转码
             to_name=os.path.splitext(source_name)[0]+'_lite.mp4'
             while os.path.exists(to_name):
                 to_name=os.path.splitext(to_name)[0]+'_1.mp4' #有时有同名不同格式的情况下,在后面加_1,有3个同名文件则会变成_1_1,以此类推
