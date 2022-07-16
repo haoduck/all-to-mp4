@@ -23,7 +23,7 @@ def ff(source_name):
         try:
             bit_rate=info['streams'][0]['bit_rate']
         except: #视频流不能获取到码率的情况下则从总码率预估
-            bit_rate=info['format']['bit_rate']-327680 #总码率-327680(320k)
+            bit_rate=str(int(info['format']['bit_rate'])-327680) #总码率-327680(320k)
         print(bit_rate)
         if int(bit_rate) > bit_rate_best+1024: #加1024，减少一些收益低的转码
             to_name=os.path.splitext(source_name)[0]+'_lite.mp4'
