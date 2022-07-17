@@ -25,21 +25,26 @@ def ff(source_name):
         except: #视频流不能获取到码率的情况下则从总码率预估
             bit_rate=str(int(info['format']['bit_rate'])-131072) #总码率-131072(128k)
         print(bit_rate)
-        if int(bit_rate) > bit_rate_best+131072: #加131072，减少一些收益低的转码
-            to_name=os.path.splitext(source_name)[0]+'_lite.mp4'
-            while os.path.exists(to_name):
-                to_name=os.path.splitext(to_name)[0]+'_1.mp4' #有时有同名不同格式的情况下,在后面加_1,有3个同名文件则会变成_1_1,以此类推
-            (
-                ffmpeg
-                .input(source_name) #ffmpeg -i source_name
-                .output(to_name,**{'c:a':'copy','c:v':vcodec,'b:v': str(bit_rate_best)}) #相当于-c:a copy -c:v h264_nvenc -b:v 3670016
-                .global_args("-y") #这里的-y就是ffmpeg -y,覆盖已经存在的文件,改为-n则为跳过
-                .run(capture_stdout=False)
-            )
-            os.rename(source_name,source_name+'.ffbak') #源文件添加后缀.ffbak,确认无误后可删除
-            os.rename(to_name,to_name.replace('_lite','')) #去掉临时添加的_lite
-        else:
+        if (int(bit_rate) < bit_rate_best+131072) and (source_name.lower().endswith('.mp4')): #加131072，减少一些收益低的转码
             print('文件:',source_name,'自身码率:',bit_rate,'比目标码率:',bit_rate_best,'低(或接近).跳过')
+            return
+        elif (int(bit_rate) < bit_rate_best+131072) and (not source_name.lower().endswith('.mp4')): #加131072，减少一些收益低的转码
+                print('文件:',source_name,'自身码率:',bit_rate,'比目标码率:',bit_rate_best,'低(或接近).使用原本的码率数值:',bit_rate)
+                bit_rate_best=bit_rate
+
+        to_name=os.path.splitext(source_name)[0]+'_lite.mp4'
+        while os.path.exists(to_name):
+            to_name=os.path.splitext(to_name)[0]+'_1.mp4' #有时有同名不同格式的情况下,在后面加_1,有3个同名文件则会变成_1_1,以此类推
+        (
+            ffmpeg
+            .input(source_name) #ffmpeg -i source_name
+            .output(to_name,**{'c:a':'copy','c:v':vcodec,'b:v': str(bit_rate_best)}) #相当于-c:a copy -c:v h264_nvenc -b:v 3670016
+            .global_args("-y") #这里的-y就是ffmpeg -y,覆盖已经存在的文件,改为-n则为跳过
+            .run(capture_stdout=False)
+        )
+        os.rename(source_name,source_name+'.ffbak') #源文件添加后缀.ffbak,确认无误后可删除
+        os.rename(to_name,to_name.replace('_lite','')) #去掉临时添加的_lite
+
     except:
         print(source_name,'执行失败')
         if os.path.exists(to_name):
